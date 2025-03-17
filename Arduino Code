@@ -1,0 +1,57 @@
+#include <Servo.h>
+
+Servo myServo;          // Create servo object to control the servo motor
+int trigPin = 10;       // Trigger Pin of Ultrasonic Sensor
+int echoPin = 11;       // Echo Pin of Ultrasonic Sensor
+int servoPin = 12;      // Servo control pin
+
+long duration;          // Time taken for the pulse to return
+int distance;           // Distance measured by the ultrasonic sensor
+
+void setup() {
+  Serial.begin(9600);
+  myServo.attach(servoPin);  
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+}
+
+void loop() {
+  // Rotate from 45° to 120°
+  for (int angle = 45; angle <= 120; angle++) {
+    myServo.write(angle);
+    delay(20);  // wait for the servo to reach the position
+    distance = calculateDistance();
+    // Send angle and distance data to Processing
+    Serial.print(angle);
+    Serial.print(",");
+    Serial.print(distance);
+    Serial.println(".");
+  }
+
+  // Rotate from 120° back to 45°
+  for (int angle = 120; angle >= 45; angle--) {
+    myServo.write(angle);
+    delay(20);
+    distance = calculateDistance();
+    Serial.print(angle);
+    Serial.print(",");
+    Serial.print(distance);
+    Serial.println(".");
+  }
+}
+
+int calculateDistance() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  duration = pulseIn(echoPin, HIGH);
+  
+  int dist = duration * 0.034 / 2;  // Convert duration to distance
+  dist = constrain(dist, 0, 40);     // Limit distance to 40cm for better visualization
+  
+  return dist;
+}
